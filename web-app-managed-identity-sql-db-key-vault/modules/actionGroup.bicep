@@ -1,6 +1,6 @@
 param appName string
 param actionGroupEmailName string = 'Paul McDonald'
-param actionGroupEmail string = 'paul.mcdonald@coats.com'
+param actionGroupEmail string = 'pm@thepaulmacca.com'
 
 var actionGroupName = 'ag-${appName}-alerts'
 var actionGroupShortName = 'ag-${appName}'
