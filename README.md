@@ -1,2 +1,3 @@
-# bicep-examples
-Bicep examples used in blog posts and demos
+# Bicep Examples
+
+Templates used for blog posts, demos and testing
