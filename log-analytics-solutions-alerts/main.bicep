@@ -1,4 +1,5 @@
 param location string = resourceGroup().location
+
 @minLength(3)
 @maxLength(4)
 param locationShort string

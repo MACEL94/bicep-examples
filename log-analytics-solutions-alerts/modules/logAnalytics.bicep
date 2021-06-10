@@ -5,6 +5,7 @@ param environment string
 
 var workspaceName = toLower('log-${appName}-${environment}-${locationShort}')
 var automationAccountName = toLower('aa-${appName}-${environment}-${locationShort}')
+var appInsightsName = toLower('appi-${appName}-${environment}-${locationShort}')
 
 var agentHealthAssessment = {
   name: 'AgentHealthAssessment(${workspaceName})'
@@ -254,6 +255,16 @@ resource logAnalyticsAutomation 'Microsoft.OperationalInsights/workspaces/linked
   name: '${logAnalyticsWorkspace.name}/Automation'
   properties: {
     resourceId: automationAccount.id
+  }
+}
+
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
+  name: appInsightsName
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 
