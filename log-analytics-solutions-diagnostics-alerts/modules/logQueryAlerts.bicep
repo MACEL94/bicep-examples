@@ -2,7 +2,7 @@ param location string
 param workspaceId string
 param actionGroupId string
 
-var breakGlassAccountAlertName = 'Break Glass Account Login Alert'
+var breakGlassAccountAlertName = 'Break Glass Account Login'
 
 resource breakGlassAccountAlert 'microsoft.insights/scheduledQueryRules@2018-04-16' = {
   name: breakGlassAccountAlertName
