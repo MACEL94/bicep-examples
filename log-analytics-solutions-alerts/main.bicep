@@ -16,6 +16,15 @@ module logAnalyticsModule 'modules/logAnalytics.bicep' = {
   }
 }
 
+module metricAlertsModule 'modules/metricAlerts.bicep' = {
+  name: 'metricAlertsDeploy'
+  params:{
+    workspaceId: logAnalyticsModule.outputs.logAnalyticsWorkspaceResourceID
+    automationAccountId: logAnalyticsModule.outputs.automationAccountResourceID
+    actionGroupId: actionGroupModule.outputs.actionGroupId
+  }
+}
+
 module logQueryAlertsModule 'modules/logQueryAlerts.bicep' = {
   name: 'logQueryAlertsDeploy'
   params: {
