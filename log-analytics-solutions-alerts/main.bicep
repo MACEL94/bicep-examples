@@ -1,4 +1,5 @@
 param location string = resourceGroup().location
+
 @minLength(3)
 @maxLength(4)
 param locationShort string
@@ -12,6 +13,15 @@ module logAnalyticsModule 'modules/logAnalytics.bicep' = {
     locationShort: locationShort
     appName: appName
     environment: environment
+  }
+}
+
+module metricAlertsModule 'modules/metricAlerts.bicep' = {
+  name: 'metricAlertsDeploy'
+  params:{
+    workspaceId: logAnalyticsModule.outputs.logAnalyticsWorkspaceResourceID
+    automationAccountId: logAnalyticsModule.outputs.automationAccountResourceID
+    actionGroupId: actionGroupModule.outputs.actionGroupId
   }
 }
 
