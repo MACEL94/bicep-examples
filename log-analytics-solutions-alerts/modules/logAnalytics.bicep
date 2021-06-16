@@ -1,48 +1,61 @@
 param location string
 param locationShort string
-param appName string
+param name string
 param environment string
 
-var workspaceName = toLower('log-${appName}-${environment}-${locationShort}')
-var automationAccountName = toLower('aa-${appName}-${environment}-${locationShort}')
-var appInsightsName = toLower('appi-${appName}-${environment}-${locationShort}')
+@description('Event log levels')
+param eventLevel array = [
+  'Error'
+  'Warning'
+]
 
-var agentHealthAssessment = {
-  name: 'AgentHealthAssessment(${workspaceName})'
-  galleryName: 'AgentHealthAssessment'
-}
-var antiMalware = {
-  name: 'AntiMalware(${workspaceName})'
-  galleryName: 'AntiMalware'
-}
-var azureSQLAnalytics = {
-  name: 'AzureSQLAnalytics(${workspaceName})'
-  galleryName: 'AzureSQLAnalytics'
-}
-var changeTracking = {
-  name: 'ChangeTracking(${workspaceName})'
-  galleryName: 'ChangeTracking'
-}
-var containerInsights = {
-  name: 'ContainerInsights(${workspaceName})'
-  galleryName: 'ContainerInsights'
-}
-var securityCenterFree = {
-  name: 'SecurityCenterFree(${workspaceName})'
-  galleryName: 'SecurityCenterFree'
-}
-var SQLAssessment = {
-  name: 'SQLAssessment(${workspaceName})'
-  galleryName: 'SQLAssessment'
-}
-// var updates = {
-//   name: 'Updates(${workspaceName})'
-//   galleryName: 'Updates'
-// }
-var vmInsights = {
-  name: 'VMInsights(${workspaceName})'
-  galleryName: 'VMInsights'
-}
+@description('Solutions to add to workspace')
+param solutions array = [
+  {
+    name: 'AgentHealthAssessment'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  {
+    name: 'AntiMalware'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  {
+    name: 'AzureSQLAnalytics'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  {
+    name: 'ChangeTracking'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  {
+    name: 'ContainerInsights'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  {
+    name: 'SecurityCenterFree'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  {
+    name: 'SQLAssessment'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  {
+    name: 'VMInsights'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+]
+
+var workspaceName = toLower('log-${name}-${environment}-${locationShort}')
+var automationAccountName = toLower('aa-${name}-${environment}-${locationShort}')
+var appInsightsName = toLower('appi-${name}-${environment}-${locationShort}')
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-10-01' = {
   name: workspaceName
@@ -60,14 +73,9 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-10
     name: 'System'
     properties: {
       eventLogName: 'System'
-      eventTypes: [
-          {
-            eventType: 'Error'
-          }
-          {
-            eventType: 'Warning'
-          }
-      ]
+      eventTypes: [for Level in eventLevel: {
+        eventType: Level
+     }]
     }
     kind: 'WindowsEvent'
   }
@@ -75,14 +83,9 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-10
     name: 'Application'
     properties: {
       eventLogName: 'Application'
-      eventTypes: [
-          {
-            eventType: 'Error'
-          }
-          {
-            eventType: 'Warning'
-          }
-      ]
+      eventTypes: [for Level in eventLevel: {
+        eventType: Level
+     }]
     }
     kind: 'WindowsEvent'
   }
@@ -238,6 +241,20 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-10
   }
 }
 
+resource logAnalyticsSolutions 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = [for solution in solutions: {
+  name: '${solution.name}(${logAnalyticsWorkspace.name})'
+  location: location
+  properties: {
+    workspaceResourceId: logAnalyticsWorkspace.id
+  }
+  plan: {
+    name: '${solution.name}(${logAnalyticsWorkspace.name})'
+    product: 'OMSGallery/${solution.name}'
+    publisher: solution.publisher
+    promotionCode: solution.promotionCode
+  }
+}]
+
 resource automationAccount 'Microsoft.Automation/automationAccounts@2020-01-13-preview' = {
   name: automationAccountName
   location: location
@@ -265,132 +282,6 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02-preview' 
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: logAnalyticsWorkspace.id
-  }
-}
-
-resource solutionsAgentHealthAssessment 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: agentHealthAssessment.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: agentHealthAssessment.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${agentHealthAssessment.galleryName}'
-    promotionCode: ''
-  }
-}
-
-resource solutionsAntiMalware 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: antiMalware.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: antiMalware.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${antiMalware.galleryName}'
-    promotionCode: ''
-  }
-}
-
-resource solutionsAzureSQLAnalytics 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: azureSQLAnalytics.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: azureSQLAnalytics.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${azureSQLAnalytics.galleryName}'
-    promotionCode: ''
-  }
-}
-
-resource solutionsChangeTracking 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: changeTracking.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: changeTracking.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${changeTracking.galleryName}'
-    promotionCode: ''
-  }
-}
-
-resource solutionsContainerInsights 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: containerInsights.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: containerInsights.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${containerInsights.galleryName}'
-    promotionCode: ''
-  }
-}
-
-resource solutionsSecurityCenterFree 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: securityCenterFree.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: securityCenterFree.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${securityCenterFree.galleryName}'
-    promotionCode: ''
-  }
-}
-
-resource solutionsSQLAssessment 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: SQLAssessment.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: SQLAssessment.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${SQLAssessment.galleryName}'
-    promotionCode: ''
-  }
-}
-
-// resource solutionsUpdates 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-//   name: updates.name
-//   location: location
-//   properties: {
-//     workspaceResourceId: logAnalyticsWorkspace.id
-//   }
-//   plan: {
-//     name: updates.name
-//     publisher: 'Microsoft'
-//     product: 'OMSGallery/${updates.galleryName}'
-//     promotionCode: ''
-//   }
-// }
-
-resource solutionsVMInsights 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: vmInsights.name
-  location: location
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: vmInsights.name
-    publisher: 'Microsoft'
-    product: 'OMSGallery/${vmInsights.galleryName}'
-    promotionCode: ''
   }
 }
 
