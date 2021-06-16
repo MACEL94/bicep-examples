@@ -1,9 +1,15 @@
+@description('Location of the workspace')
 param location string = resourceGroup().location
 
+@description('Shortened location of the workspace')
 @minLength(3)
 @maxLength(4)
 param locationShort string
-param appName string
+
+@description('Name of the workspace')
+param name string
+
+@description('Environment where the workspace is deployed')
 param environment string
 
 module logAnalyticsModule 'modules/logAnalytics.bicep' = {
@@ -11,7 +17,7 @@ module logAnalyticsModule 'modules/logAnalytics.bicep' = {
   params:{
     location: location
     locationShort: locationShort
-    appName: appName
+    name: name
     environment: environment
   }
 }
@@ -37,6 +43,6 @@ module logQueryAlertsModule 'modules/logQueryAlerts.bicep' = {
 module actionGroupModule 'modules/actionGroup.bicep' = {
   name: 'actionGroupDeploy'
   params:{
-    appName: appName
+    name: name
   }
 }
