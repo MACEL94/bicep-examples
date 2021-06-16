@@ -1,9 +1,9 @@
-param appName string
+param name string
 param actionGroupEmailName string = 'Paul McDonald'
 param actionGroupEmail string = 'paul@tpmtesting.net'
 
-var actionGroupName = 'ag-${appName}-alerts'
-var actionGroupShortName = '${appName}alerts'
+var actionGroupName = 'ag-${name}-alerts'
+var actionGroupShortName = '${name}alerts'
 
 resource actionGroup 'microsoft.insights/actionGroups@2019-06-01' = {
   name: actionGroupName
